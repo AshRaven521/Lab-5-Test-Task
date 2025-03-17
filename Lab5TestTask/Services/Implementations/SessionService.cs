@@ -20,11 +20,25 @@ public class SessionService : ISessionService
 
     public async Task<Session> GetSessionAsync()
     {
-        throw new NotImplementedException();
+        var earliestSession = await _dbContext.Sessions
+            .Where(s => s.DeviceType == Enums.DeviceType.Desktop)
+            .OrderBy(d => d.StartedAtUTC)
+            .FirstOrDefaultAsync();
+
+        return earliestSession;
     }
 
     public async Task<List<Session>> GetSessionsAsync()
     {
-        throw new NotImplementedException();
+        var sessions = _dbContext.Sessions
+            .Where(s => s.User.Status == Enums.UserStatus.Active)
+            .Where(s => s.EndedAtUTC.Year < 2025);
+
+        if (!sessions.Any())
+        {
+            return new List<Session>();
+        }
+
+        return await sessions.ToListAsync();
     }
 }
